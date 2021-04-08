@@ -18,7 +18,6 @@ require (
 	github.com/go-ini/ini v1.38.2 // indirect
 	github.com/go-sql-driver/mysql v1.4.0
 	github.com/gocql/gocql v0.0.0-20180913072538-864d5908455a
-	github.com/golang/lint v0.0.0-20180702182130-06c8688daad7 // indirect
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/go-querystring v0.0.0-20170111101155-53e6ce116135 // indirect
 	github.com/google/martian v2.1.0+incompatible // indirect
