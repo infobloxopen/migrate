@@ -1,4 +1,4 @@
-FROM golang:1.13-alpine3.12 AS downloader
+FROM golang:1.17-alpine AS downloader
 ARG VERSION
 
 RUN apk add --no-cache git gcc musl-dev
@@ -13,7 +13,7 @@ ENV SOURCES="file go_bindata github aws_s3 google_cloud_storage"
 
 RUN go build -a -o build/migrate.linux-386 -ldflags="-X main.Version=${VERSION}" -tags "$DATABASES $SOURCES" ./cli
 
-FROM alpine:3.12
+FROM alpine:3.15
 
 RUN apk add --no-cache ca-certificates
 
