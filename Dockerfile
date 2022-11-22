@@ -1,5 +1,7 @@
 FROM golang:1.19-alpine3.16 AS builder
 ARG VERSION
+ARG DATABASE
+ARG SOURCE
 
 RUN apk add --no-cache git gcc musl-dev make
 
@@ -13,7 +15,7 @@ RUN go mod download
 
 COPY . ./
 
-RUN make build-docker
+RUN CGO_ENABLED=0 go build -a -o build/migrate.linux-386 -ldflags="-s -w -X main.Version=${VERSION}" -tags "$(DATABASE) $(SOURCE)" ./cmd/migrate
 
 FROM alpine:3.16
 
