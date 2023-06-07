@@ -31,6 +31,10 @@ build:
 docker-push:
 	docker push infoblox/migrate:$(VERSION)
 
+report-image-version:
+	mkdir -p dist/
+	touch dist/migrate:$(VERSION)
+
 show-image-version:
 	echo $(VERSION)
 
