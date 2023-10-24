@@ -17,7 +17,7 @@ COPY . ./
 
 RUN CGO_ENABLED=0 go build -a -o build/migrate.linux-386 -ldflags="-s -w -X main.Version=${VERSION}" -tags "$(DATABASE) $(SOURCE)" ./cmd/migrate
 
-FROM alpine:latest
+FROM alpine:3.18
 
 COPY --from=builder /go/src/github.com/infobloxopen/migrate/cmd/migrate/config /cli/config/
 COPY --from=builder /go/src/github.com/infobloxopen/migrate/build/migrate.linux-386 /usr/local/bin/migrate
