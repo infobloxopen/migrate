@@ -43,6 +43,7 @@ const (
 
 func init() {
 	hotload.RegisterSQLDriver("postgres", pq.Driver{})
+	hotload.RegisterSQLDriver("pgx", stdlib.GetDefaultDriver())
 }
 
 func handleSubCmdHelp(help bool, usage string, flagSet *flag.FlagSet) {
