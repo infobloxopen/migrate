@@ -2,7 +2,9 @@ package cli
 
 import (
 	"database/sql"
+	"database/sql/driver"
 	"fmt"
+	"github.com/jackc/pgx/v4/stdlib"
 	"net/url"
 	"os"
 	"os/signal"
@@ -12,6 +14,7 @@ import (
 	"time"
 
 	"github.com/infobloxopen/hotload"
+	_ "github.com/infobloxopen/hotload/fsnotify"
 	"github.com/lib/pq"
 	flag "github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -39,10 +42,6 @@ const (
 	Use -f to bypass confirmation`
 	forceUsage = `force V      Set version V but don't run migration (ignores dirty state)`
 )
-
-func init() {
-	hotload.RegisterSQLDriver("postgres", pq.Driver{})
-}
 
 func handleSubCmdHelp(help bool, usage string, flagSet *flag.FlagSet) {
 	if help {
@@ -73,6 +72,10 @@ func dbMakeConnectionString(driver, user, password, address, name, ssl string) s
 	return fmt.Sprintf("%s://%s:%s@%s/%s?sslmode=%s",
 		driver, url.QueryEscape(user), url.QueryEscape(password), address, name, ssl,
 	)
+}
+
+func registerHotloadWithDriver(name string, driver driver.Driver) {
+	hotload.RegisterSQLDriver(name, driver)
 }
 
 // Main function of a cli application. It is public for backwards compatibility with `cli` package
@@ -164,7 +167,13 @@ Database drivers: `+strings.Join(database.List(), ", ")+"\n", createUsage, gotoU
 		if err != nil {
 			log.fatalErr(fmt.Errorf("could not parse hotload dsn %v: %s", databasePtr, err))
 		}
-		if hostname := u.Hostname(); hostname != "postgres" {
+		hostname := u.Hostname()
+		switch hostname {
+		case "postgres":
+			registerHotloadWithDriver(hostname, pq.Driver{})
+		case "pgx":
+			registerHotloadWithDriver(hostname, stdlib.GetDefaultDriver())
+		default:
 			log.fatalErr(fmt.Errorf("unsupported hotload base driver: %s", hostname))
 		}
 		db, err := sql.Open(driver, databasePtr)
