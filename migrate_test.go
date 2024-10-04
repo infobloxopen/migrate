@@ -1645,7 +1645,7 @@ func TestCopyFiles(t *testing.T) {
 			copiedFiles:    []string{"1_name.up.sql", "2_name.up.sql", "3_name.up.sql", "4_name.up.sql"},
 		},
 		{
-			emptyDestPath: true,
+			emptyDestPath: true, // copyFiles should not do anything
 		},
 	}
 
@@ -1671,6 +1671,99 @@ func TestCopyFiles(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestWithDirtyStateConfig(t *testing.T) {
+	tests := []struct {
+		name     string
+		srcPath  string
+		destPath string
+		isDirty  bool
+		wantErr  bool
+		wantConf *dirtyStateConfig
+	}{
+		{
+			name:     "Valid file paths",
+			srcPath:  "file:///src/path",
+			destPath: "file:///dest/path",
+			isDirty:  true,
+			wantErr:  false,
+			wantConf: &dirtyStateConfig{
+				srcScheme:  "file://",
+				destScheme: "file://",
+				srcPath:    "/src/path",
+				destPath:   "/dest/path",
+				enable:     true,
+			},
+		},
+		{
+			name:     "Invalid source scheme",
+			srcPath:  "s3:///src/path",
+			destPath: "file:///dest/path",
+			isDirty:  true,
+			wantErr:  true,
+		},
+		{
+			name:     "Invalid destination scheme",
+			srcPath:  "file:///src/path",
+			destPath: "s3:///dest/path",
+			isDirty:  true,
+			wantErr:  true,
+		},
+		{
+			name:     "Empty source scheme",
+			srcPath:  "/src/path",
+			destPath: "file:///dest/path",
+			isDirty:  true,
+			wantErr:  false,
+			wantConf: &dirtyStateConfig{
+				srcScheme:  "file://",
+				destScheme: "file://",
+				srcPath:    "/src/path",
+				destPath:   "/dest/path",
+				enable:     true,
+			},
+		},
+		{
+			name:     "Empty destination scheme",
+			srcPath:  "file:///src/path",
+			destPath: "/dest/path",
+			isDirty:  true,
+			wantErr:  false,
+			wantConf: &dirtyStateConfig{
+				srcScheme:  "file://",
+				destScheme: "file://",
+				srcPath:    "/src/path",
+				destPath:   "/dest/path",
+				enable:     true,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			m := &Migrate{}
+			err := m.WithDirtyStateConfig(tt.srcPath, tt.destPath, tt.isDirty)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !tt.wantErr && !compareDirtyStateConfig(m.dirtyStateConf, tt.wantConf) {
+				t.Errorf("dirtyStateConf = %v, want %v", m.dirtyStateConf, tt.wantConf)
+			}
+		})
+	}
+}
+
+func compareDirtyStateConfig(a, b *dirtyStateConfig) bool {
+	if a == nil || b == nil {
+		return a == b
+	}
+	return a.srcScheme == b.srcScheme &&
+		a.srcPath == b.srcPath &&
+		a.destScheme == b.destScheme &&
+		a.destPath == b.destPath &&
+		a.enable == b.enable
 }
 
 /*

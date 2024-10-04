@@ -218,31 +218,27 @@ func NewWithInstance(sourceName string, sourceInstance source.Driver, databaseNa
 	return m, nil
 }
 
-func (m *Migrate) WithDirtyStateHandler(srcPath, destPath string, isDirty bool) error {
-	parser := func(path string) (string, string, error) {
-		var scheme, p string
+func (m *Migrate) WithDirtyStateConfig(srcPath, destPath string, isDirty bool) error {
+	parsePath := func(path string) (string, string, error) {
 		uri, err := url.Parse(path)
 		if err != nil {
 			return "", "", err
 		}
-		scheme = uri.Scheme
-		p = uri.Path
-		// if no scheme is provided, assume it's a file path
-		switch scheme {
-		case "", "file":
+		scheme := uri.Scheme
+		if scheme == "" || scheme == "file" {
 			scheme = "file://"
-		default:
+		} else if scheme != "file" {
 			return "", "", fmt.Errorf("unsupported scheme: %s", scheme)
 		}
-		return scheme, p, nil
+		return scheme, uri.Path, nil
 	}
 
-	sScheme, sPath, err := parser(srcPath)
+	sScheme, sPath, err := parsePath(srcPath)
 	if err != nil {
 		return err
 	}
 
-	dScheme, dPath, err := parser(destPath)
+	dScheme, dPath, err := parsePath(destPath)
 	if err != nil {
 		return err
 	}
