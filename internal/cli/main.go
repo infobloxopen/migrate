@@ -77,7 +77,7 @@ func EscapeIfNeeded(str string) string {
 		// If the str is already unescaped or an error occurred, escape it
 		return url.QueryEscape(str)
 	}
-	// If the str was successfully unescaped, return it as is
+	// If the str was successfully unescaped and is different from the original, return the original
 	return str
 }
 
