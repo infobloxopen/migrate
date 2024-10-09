@@ -67,8 +67,18 @@ func printUsageAndExit() {
 
 func dbMakeConnectionString(driver, user, password, address, name, ssl string) string {
 	return fmt.Sprintf("%s://%s:%s@%s/%s?sslmode=%s",
-		driver, url.QueryEscape(user), url.QueryEscape(password), address, name, ssl,
+		driver, EscapeIfNeeded(user), EscapeIfNeeded(password), address, name, ssl,
 	)
+}
+
+func EscapeIfNeeded(str string) string {
+	unescapedStr, err := url.QueryUnescape(str)
+	if err != nil || unescapedStr == str {
+		// If the str is already unescaped or an error occurred, escape it
+		return url.QueryEscape(str)
+	}
+	// If the str was successfully unescaped, return it as is
+	return str
 }
 
 // Main function of a cli application. It is public for backwards compatibility with `cli` package
