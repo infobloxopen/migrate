@@ -13,7 +13,7 @@ RUN go mod download
 
 COPY . ./
 
-#RUN make build-docker
+RUN make build-docker
 
 FROM alpine:latest
 
