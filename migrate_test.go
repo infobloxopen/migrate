@@ -1418,17 +1418,6 @@ func equalDbSeq(t *testing.T, i int, expected migrationSequence, got *dStub.Stub
 	}
 }
 
-// Setting up temp directory to be used as the volume mount
-func setupTempDir(t *testing.T) (string, func()) {
-	tempDir := t.TempDir()
-
-	return tempDir, func() {
-		if err := os.RemoveAll(tempDir); err != nil {
-			t.Fatal(err)
-		}
-	}
-}
-
 func setupMigrateInstance(tempDir string) (*Migrate, *dStub.Stub) {
 	scheme := "stub://"
 	m, _ := New(scheme, scheme)
@@ -1441,8 +1430,7 @@ func setupMigrateInstance(tempDir string) (*Migrate, *dStub.Stub) {
 }
 
 func TestHandleDirtyState(t *testing.T) {
-	tempDir, cleanup := setupTempDir(t)
-	defer cleanup()
+	tempDir := t.TempDir()
 
 	m, dbDrv := setupMigrateInstance(tempDir)
 	m.sourceDrv.(*sStub.Stub).Migrations = sourceStubMigrations
@@ -1519,8 +1507,7 @@ func TestHandleDirtyState(t *testing.T) {
 }
 
 func TestHandleMigrationFailure(t *testing.T) {
-	tempDir, cleanup := setupTempDir(t)
-	defer cleanup()
+	tempDir := t.TempDir()
 
 	m, _ := setupMigrateInstance(tempDir)
 
@@ -1557,8 +1544,7 @@ func TestHandleMigrationFailure(t *testing.T) {
 }
 
 func TestCleanupFiles(t *testing.T) {
-	tempDir, cleanup := setupTempDir(t)
-	defer cleanup()
+	tempDir := t.TempDir()
 
 	m, _ := setupMigrateInstance(tempDir)
 	m.sourceDrv.(*sStub.Stub).Migrations = sourceStubMigrations
@@ -1622,11 +1608,8 @@ func TestCleanupFiles(t *testing.T) {
 }
 
 func TestCopyFiles(t *testing.T) {
-	srcDir, cleanupSrc := setupTempDir(t)
-	defer cleanupSrc()
-
-	destDir, cleanupDest := setupTempDir(t)
-	defer cleanupDest()
+	srcDir := t.TempDir()
+	destDir := t.TempDir()
 
 	m, _ := setupMigrateInstance(destDir)
 	m.dirtyStateConf.srcPath = srcDir
@@ -1748,22 +1731,11 @@ func TestWithDirtyStateConfig(t *testing.T) {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !tt.wantErr && !compareDirtyStateConfig(m.dirtyStateConf, tt.wantConf) {
+			if !tt.wantErr && m.dirtyStateConf == tt.wantConf {
 				t.Errorf("dirtyStateConf = %v, want %v", m.dirtyStateConf, tt.wantConf)
 			}
 		})
 	}
-}
-
-func compareDirtyStateConfig(a, b *dirtyStateConfig) bool {
-	if a == nil || b == nil {
-		return a == b
-	}
-	return a.srcScheme == b.srcScheme &&
-		a.srcPath == b.srcPath &&
-		a.destScheme == b.destScheme &&
-		a.destPath == b.destPath &&
-		a.enable == b.enable
 }
 
 /*

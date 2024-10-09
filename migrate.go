@@ -88,7 +88,7 @@ type Migrate struct {
 	// but can be set per Migrate instance.
 	LockTimeout time.Duration
 
-	// DirtyStateHandler is used to handle dirty state of the database
+	// dirtyStateConfig is used to store the configuration required to handle dirty state of the database
 	dirtyStateConf *dirtyStateConfig
 }
 
@@ -224,13 +224,11 @@ func (m *Migrate) WithDirtyStateConfig(srcPath, destPath string, isDirty bool) e
 		if err != nil {
 			return "", "", err
 		}
-		scheme := uri.Scheme
-		if scheme == "" || scheme == "file" {
-			scheme = "file://"
-		} else if scheme != "file" {
+		scheme := "file"
+		if uri.Scheme != "file" && uri.Scheme != "" {
 			return "", "", fmt.Errorf("unsupported scheme: %s", scheme)
 		}
-		return scheme, uri.Path, nil
+		return scheme + "://", uri.Path, nil
 	}
 
 	sScheme, sPath, err := parsePath(srcPath)
@@ -1091,7 +1089,7 @@ func (m *Migrate) handleDirtyState() error {
 	   3. Set the last successful migration version in the schema_migrations table
 	   4. Delete the last successful migration file
 	*/
-	// the source driver should read the migrations from the mounted volume
+	// the source driver should read the migrations from the destination path
 	// as the DB is dirty and last applied migrations to the database are not present in the source path
 	if err := m.updateSourceDrv(m.dirtyStateConf.destScheme + m.dirtyStateConf.destPath); err != nil {
 		return err
