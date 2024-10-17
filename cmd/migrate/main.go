@@ -16,7 +16,10 @@ import (
 
 func init() {
 	pflag.Parse()
-	viper.BindPFlags(pflag.CommandLine)
+	err := viper.BindPFlags(pflag.CommandLine)
+	if err != nil {
+		log.Fatalf("failed to bind full flag set to config: %v", err)
+	}
 	viper.AutomaticEnv()
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AddConfigPath(viper.GetString("config.source"))
