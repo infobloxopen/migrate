@@ -2,7 +2,7 @@ SOURCE ?= file go_bindata github github_ee bitbucket aws_s3 google_cloud_storage
 DATABASE ?= postgres mysql redshift cassandra spanner cockroachdb yugabytedb clickhouse mongodb sqlserver firebird neo4j pgx pgx5 rqlite
 DATABASE_TEST ?= $(DATABASE) sqlite sqlite3 sqlcipher
 BUILD_NUMBER ?= 0
-VERSION ?= $(shell git describe --tags --long --dirty=-unsupported 2>/dev/null | cut -c 2-)-j$(BUILD_NUMBER)
+VERSION ?= $(shell git describe --tags --long --dirty=-unsupported 2>/dev/null | cut -c 2- | sed 's/^-//')-j$(BUILD_NUMBER)
 TEST_FLAGS ?=
 REPO_OWNER ?= $(shell cd .. && basename "$$(pwd)")
 COVERAGE_DIR ?= .coverage
@@ -11,7 +11,7 @@ build:
 	CGO_ENABLED=0 go build -ldflags='-X main.Version=$(VERSION)' -tags '$(DATABASE) $(SOURCE)' ./cmd/migrate
 
 build-docker:
-	CGO_ENABLED=0 go build -a -o build/migrate.linux-386 -ldflags="-s -w -X main.Version=${VERSION}" -tags "$(DATABASE) $(SOURCE)" ./cmd/migrate
+	CGO_ENABLED=0 go build -mod=vendor -a -o build/migrate.linux-386 -ldflags="-s -w -X main.Version=${VERSION}" -tags "$(DATABASE) $(SOURCE)" ./cmd/migrate
 
 build-cli: clean
 	-mkdir ./cli/build
@@ -25,7 +25,7 @@ build-cli: clean
 	cd ./cli/build && shasum -a 256 * > sha256sum.txt
 	cat ./cli/build/sha256sum.txt
 
-build:
+docker-build:
 	docker build --pull --build-arg VERSION=$(VERSION) . -t infoblox/migrate -t infoblox/migrate:$(VERSION)
 
 docker-push:
@@ -38,7 +38,7 @@ list-of-images:
 	@echo "infoblox/migrate:$(VERSION)"
 
 clean:
-	-rm -r ./cli/build
+	@if [ -d ./cli/build ]; then -rm -r ./cli/build; fi
 
 
 test-short:
