@@ -100,6 +100,12 @@ func Test(t *testing.T) {
 	t.Run("testWithInstanceConcurrent", testWithInstanceConcurrent)
 	t.Run("testWithConnection", testWithConnection)
 
+	// Storage functionality tests
+	t.Run("TestStorageMigrations", TestStorageMigrations)
+	t.Run("TestSyncMigrations", TestSyncMigrations)
+	t.Run("TestStorageSchemaUpgrade", TestStorageSchemaUpgrade)
+	t.Run("TestStorageErrorHandling", TestStorageErrorHandling)
+
 	t.Cleanup(func() {
 		for _, spec := range specs {
 			t.Log("Cleaning up ", spec.ImageName)
