@@ -46,6 +46,21 @@ jobs:
           flag-name: Go-${{ matrix.go }}
           parallel: true
 
+  test-status:
+    # Stable-named gate for branch protection. The `test` job's own check name is
+    # derived from its matrix (e.g. "test (1.26.x)"), so it changes every time the
+    # Go version is bumped, which silently blocks PRs on a required check that no
+    # longer reports. Require this job instead; its name never changes.
+    name: Tests passed
+    needs: [test]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check test matrix result
+        run: |
+          echo "test job result: ${{ needs.test.result }}"
+          test "${{ needs.test.result }}" = "success"
+
   check-coverage:
     name: Check coverage
     needs: [test]
