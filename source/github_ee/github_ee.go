@@ -11,7 +11,7 @@ import (
 	"github.com/golang-migrate/migrate/v4/source"
 	gh "github.com/golang-migrate/migrate/v4/source/github"
 
-	"github.com/google/go-github/v39/github"
+	"github.com/google/go-github/v92/github"
 )
 
 func init() {
@@ -84,7 +84,12 @@ func (g *GithubEE) createGithubClient(host, username, password string, verifyTLS
 	apiHost := fmt.Sprintf("https://%s/api/v3", host)
 	uploadHost := fmt.Sprintf("https://uploads.%s", host)
 
-	return github.NewEnterpriseClient(apiHost, uploadHost, tr.Client())
+	// NewEnterpriseClient was removed in later go-github releases; the
+	// enterprise URLs and HTTP client are now supplied as client options.
+	return github.NewClient(
+		github.WithHTTPClient(tr.Client()),
+		github.WithEnterpriseURLs(apiHost, uploadHost),
+	)
 }
 
 func parseBool(val string, fallback bool) bool {
