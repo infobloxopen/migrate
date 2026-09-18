@@ -21,5 +21,5 @@ COPY --from=builder /go/src/github.com/infobloxopen/migrate/cmd/migrate/config /
 COPY --from=builder /go/src/github.com/infobloxopen/migrate/build/migrate.linux-386 /migrate
 COPY --from=builder /etc/ssl/certs/ /etc/ssl/certs/
 
-ENTRYPOINT ["migrate"]
+ENTRYPOINT ["/migrate"]
 CMD ["--help"]
