@@ -82,22 +82,28 @@ func parseURI(uri string) (*Config, error) {
 }
 
 func (s *s3Driver) loadMigrations() error {
-	output, err := s.s3client.ListObjectsV2(context.Background(), &s3.ListObjectsV2Input{
+	// ListObjectsV2 returns at most 1000 keys per response, so paginate over
+	// every page; otherwise migrations beyond the first 1000 objects are
+	// silently dropped and never applied.
+	paginator := s3.NewListObjectsV2Paginator(s.s3client, &s3.ListObjectsV2Input{
 		Bucket:    aws.String(s.config.Bucket),
 		Prefix:    aws.String(s.config.Prefix),
 		Delimiter: aws.String("/"),
 	})
-	if err != nil {
-		return err
-	}
-	for _, object := range output.Contents {
-		_, fileName := path.Split(aws.ToString(object.Key))
-		m, err := source.DefaultParse(fileName)
+	for paginator.HasMorePages() {
+		output, err := paginator.NextPage(context.Background())
 		if err != nil {
-			continue
+			return err
 		}
-		if !s.migrations.Append(m) {
-			return fmt.Errorf("unable to parse file %v", aws.ToString(object.Key))
+		for _, object := range output.Contents {
+			_, fileName := path.Split(aws.ToString(object.Key))
+			m, err := source.DefaultParse(fileName)
+			if err != nil {
+				continue
+			}
+			if !s.migrations.Append(m) {
+				return fmt.Errorf("unable to parse file %v", aws.ToString(object.Key))
+			}
 		}
 	}
 	return nil

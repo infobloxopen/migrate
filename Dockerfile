@@ -1,4 +1,4 @@
-FROM golang:1.26.4-alpine AS builder
+FROM golang:1.26.8-alpine3.24 AS builder
 ARG VERSION
 
 RUN apk add --no-cache git gcc musl-dev make
@@ -21,5 +21,5 @@ COPY --from=builder /go/src/github.com/infobloxopen/migrate/cmd/migrate/config /
 COPY --from=builder /go/src/github.com/infobloxopen/migrate/build/migrate.linux-386 /migrate
 COPY --from=builder /etc/ssl/certs/ /etc/ssl/certs/
 
-ENTRYPOINT ["migrate"]
+ENTRYPOINT ["/migrate"]
 CMD ["--help"]
