@@ -13,7 +13,7 @@ import (
 	"golang.org/x/oauth2"
 
 	"github.com/golang-migrate/migrate/v4/source"
-	"github.com/google/go-github/v39/github"
+	"github.com/google/go-github/v92/github"
 )
 
 func init() {
@@ -62,8 +62,20 @@ func (g *Github) Open(url string) (source.Driver, error) {
 
 	}
 
+	// NewClient takes options and returns an error as of go-github v92.
+	// WithHTTPClient rejects a nil client, so only pass it when the URL
+	// carried user info; otherwise go-github supplies its own default.
+	var opts []github.ClientOptionsFunc
+	if client != nil {
+		opts = append(opts, github.WithHTTPClient(client))
+	}
+	ghClient, err := github.NewClient(opts...)
+	if err != nil {
+		return nil, err
+	}
+
 	gn := &Github{
-		client:     github.NewClient(client),
+		client:     ghClient,
 		migrations: source.NewMigrations(),
 		options:    &github.RepositoryContentGetOptions{Ref: u.Fragment},
 	}
