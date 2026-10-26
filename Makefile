@@ -23,16 +23,13 @@ build-cli: clean
 	cat ./cli/build/sha256sum.txt
 
 build:
-	docker build --pull --build-arg VERSION=$(VERSION) . -t infoblox/migrate -t infoblox/migrate:$(VERSION)
-
-docker-push:
-	docker push infoblox/migrate:$(VERSION)
+	docker build --pull --build-arg VERSION=$(VERSION) . -t ghcr.io/infobloxopen/migrate -t ghcr.io/infobloxopen/migrate:$(VERSION)
 
 show-image-version:
 	echo $(VERSION)
 
 list-of-images:
-	@echo "infoblox/migrate:$(VERSION)"
+	@echo "ghcr.io/infobloxopen/migrate:$(VERSION)"
 
 clean:
 	-rm -r ./cli/build
