@@ -1,0 +1,5 @@
+# Paths that exist upstream but are deliberately deleted in this fork.
+# scripts/sync-upstream.sh re-deletes them after every upstream merge, so an
+# upstream edit to a removed path never needs a manual modify/delete resolution.
+database/yugabytedb
+internal/cli/build_yugabytedb.go
