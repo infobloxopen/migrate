@@ -8,6 +8,7 @@
 | Path | Why |
 | --- | --- |
 | `database/yugabytedb` | Not used by Infoblox; drops its dependencies and CVE surface. |
+| `database/snowflake` | Not shipped (not in the Makefile `DATABASE` list) and `gosnowflake` has an unfixed advisory (GO-2026-6665). |
 
 The list lives in `scripts/fork-removed.txt`. To remove another upstream
 component, delete it, add its path to that file, and drop its name from the
