@@ -3,3 +3,5 @@
 # upstream edit to a removed path never needs a manual modify/delete resolution.
 database/yugabytedb
 internal/cli/build_yugabytedb.go
+database/snowflake
+internal/cli/build_snowflake.go
