@@ -8,7 +8,7 @@ REPO_OWNER ?= $(shell cd .. && basename "$$(pwd)")
 COVERAGE_DIR ?= .coverage
 
 build-docker:
-	CGO_ENABLED=0 go build -a -o build/migrate.linux-386 -ldflags="-s -w -X main.Version=${VERSION}" -tags "$(DATABASE) $(SOURCE)" ./cmd/migrate
+	CGO_ENABLED=0 go build -a -o build/migrate -ldflags="-s -w -X main.Version=${VERSION}" -tags "$(DATABASE) $(SOURCE)" ./cmd/migrate
 
 build-cli: clean
 	-mkdir ./cli/build
@@ -23,16 +23,13 @@ build-cli: clean
 	cat ./cli/build/sha256sum.txt
 
 build:
-	docker build --pull --build-arg VERSION=$(VERSION) . -t infoblox/migrate -t infoblox/migrate:$(VERSION)
-
-docker-push:
-	docker push infoblox/migrate:$(VERSION)
+	docker build --pull --build-arg VERSION=$(VERSION) . -t ghcr.io/infobloxopen/migrate -t ghcr.io/infobloxopen/migrate:$(VERSION)
 
 show-image-version:
 	echo $(VERSION)
 
 list-of-images:
-	@echo "infoblox/migrate:$(VERSION)"
+	@echo "ghcr.io/infobloxopen/migrate:$(VERSION)"
 
 clean:
 	-rm -r ./cli/build
