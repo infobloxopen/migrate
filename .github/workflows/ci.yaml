@@ -46,6 +46,16 @@ jobs:
           flag-name: Go-${{ matrix.go }}
           parallel: true
 
+  build-image:
+    name: Build image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Build only; the image is not pushed anywhere.
+      - name: Build container image
+        run: make build
+
   test-status:
     # Stable-named gate for branch protection. The `test` job's own check name is
     # derived from its matrix (e.g. "test (1.27.3)"), so it changes every time the
