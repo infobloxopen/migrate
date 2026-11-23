@@ -6,7 +6,6 @@ LICENSE
 .travis.yml
 CONTRIBUTING.md
 MIGRATIONS.md
-docker-deploy.sh
 
 # Golang
 testing

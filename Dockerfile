@@ -18,7 +18,7 @@ RUN make build-docker
 FROM gcr.io/distroless/static:nonroot
 
 COPY --from=builder /go/src/github.com/infobloxopen/migrate/cmd/migrate/config /cli/config/
-COPY --from=builder /go/src/github.com/infobloxopen/migrate/build/migrate.linux-386 /migrate
+COPY --from=builder /go/src/github.com/infobloxopen/migrate/build/migrate /migrate
 COPY --from=builder /etc/ssl/certs/ /etc/ssl/certs/
 
 ENTRYPOINT ["/migrate"]
